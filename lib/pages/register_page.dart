@@ -1,10 +1,12 @@
 import 'dart:ui';
-
+import 'package:chat/helpers/mostrar_alerta.dart';
+import 'package:flutter/material.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/boton_azul_widget.dart';
 import 'package:chat/widgets/custom_widget.dart';
 import 'package:chat/widgets/labels_widget.dart';
 import 'package:chat/widgets/logo_widget.dart';
-import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatelessWidget {
 
@@ -45,6 +47,8 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -53,7 +57,7 @@ class __FormState extends State<_Form> {
           CustomImput(
             icon: Icons.perm_identity,
             placeholder: 'Nombre',
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
             textController: nameCtrl,
           ),
           CustomImput(
@@ -69,10 +73,20 @@ class __FormState extends State<_Form> {
             isPassword: true,
           ),
           BotonAzulWidget(
-            text: 'Ingrese',
-            onPressed: () {
-              print(emailCtrl.text);
-              print(passCtrl.text);
+            text: 'Crear Cuenta',
+            onPressed: authService.registrando? null : () async {
+              FocusScope.of(context).unfocus();
+              if(nameCtrl.text.length == 0 || emailCtrl.text.length == 0 || passCtrl.text.length == 0) {
+                mostrarAlerta(context, 'Advertencia', 'Por favor completar todos los campos');
+              } else {
+                final registerOk = await authService.register(nameCtrl.text.trim(), emailCtrl.text.trim(), passCtrl.text.trim());
+                if(registerOk == true) {
+                  Navigator.pushReplacementNamed(context, 'usuarios');
+                  print('OK');
+                } else {
+                  mostrarAlerta(context, 'Error', registerOk);
+                }
+              }
             },
           )
         ],
